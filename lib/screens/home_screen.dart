@@ -8,7 +8,7 @@ import '../models/product.dart';
 import '../widgets/product_card.dart';
 import '../helpers/suggestion_helper.dart';
 import 'login_screen.dart';
-import 'cart_screen.dart'; // Make sure this exists
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,12 +28,19 @@ class _HomeScreenState extends State<HomeScreen>
 
   late final AnimationController _controller;
 
+  // Color scheme
+  static const Color primaryBlue = Color(0xFF2196F3);
+  static const Color lightBlue = Color(0xFF64B5F6);
+  static const Color darkBlue = Color(0xFF1976D2);
+  static const Color accentBlue = Color(0xFFE3F2FD);
+  static const Color successGreen = Color(0xFF4CAF50);
+
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200),
     );
     _controller.forward();
     fetchProducts();
@@ -86,6 +93,13 @@ class _HomeScreenState extends State<HomeScreen>
       addedToCart.add(product.id);
       bannerMessage = "${product.name} added to cart";
     });
+
+    // Auto-dismiss banner after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() => bannerMessage = null);
+      }
+    });
   }
 
   void handleLogout() async {
@@ -106,89 +120,294 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryBlue.withOpacity(0.1), accentBlue],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: lightBlue.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: primaryBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: darkBlue,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.3);
+  }
+
+  Widget _buildSuccessBanner() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [successGreen.withOpacity(0.1), Colors.green.shade50],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: successGreen.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: successGreen.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: successGreen,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              bannerMessage!,
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => setState(() => bannerMessage = null),
+            icon: const Icon(
+              Icons.close,
+              color: Colors.green,
+              size: 20,
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.5);
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: accentBlue,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(primaryBlue),
+              strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Loading amazing products...",
+            style: TextStyle(
+              color: darkBlue,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 600.ms).scale(begin: const Offset(0.8, 0.8));
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: accentBlue,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Icon(
+              Icons.shopping_bag_outlined,
+              size: 64,
+              color: primaryBlue,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "No products available",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: darkBlue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Check back later for new arrivals",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.8, 0.8));
+  }
+
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _controller,
       child: Scaffold(
+        backgroundColor: Colors.grey[50],
         appBar: AppBar(
-          title: const Text("Shopping App 🛍️"),
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: darkBlue,
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryBlue, lightBlue],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.shopping_bag,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                "Shopping App",
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
           actions: [
-            IconButton(
-              onPressed: navigateToCart,
-              icon: const Icon(Icons.shopping_cart_outlined),
-              tooltip: "View Cart",
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: accentBlue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                onPressed: navigateToCart,
+                icon: const Icon(Icons.shopping_cart_outlined),
+                tooltip: "View Cart",
+              ),
             ),
-            IconButton(
-              onPressed: handleLogout,
-              icon: const Icon(Icons.logout),
-              tooltip: "Logout",
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                onPressed: handleLogout,
+                icon: Icon(Icons.logout, color: Colors.red.shade600),
+                tooltip: "Logout",
+              ),
             ),
           ],
         ),
         body: Column(
           children: [
-            if (bannerMessage != null)
-              MaterialBanner(
-                backgroundColor: Colors.green.shade50,
-                content: Text(
-                  bannerMessage!,
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => setState(() => bannerMessage = null),
-                    child: const Text("Dismiss"),
-                  )
-                ],
-              ),
+            if (bannerMessage != null) _buildSuccessBanner(),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: fetchProducts,
+                color: primaryBlue,
+                backgroundColor: Colors.white,
                 child: loading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? _buildLoadingIndicator()
                     : products.isEmpty
-                    ? const Center(child: Text("No products available"))
+                    ? _buildEmptyState()
                     : ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: Text(
-                        "Suggested for You 🍪",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                    const SizedBox(height: 8),
+                    _buildSectionHeader("Suggested for You", Icons.recommend),
+                    ...suggestions.asMap().entries.map(
+                          (entry) => Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
                         ),
-                      ),
-                    ),
-                    ...suggestions.map(
-                          (p) => ProductCard(
-                        product: p,
-                        onTap: () => handleAddToCart(p),
-                        alreadyInCart: addedToCart.contains(p.id),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                      child: Text(
-                        "All Products 🛒",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                        child: ProductCard(
+                          product: entry.value,
+                          onTap: () => handleAddToCart(entry.value),
+                          alreadyInCart: addedToCart.contains(entry.value.id),
                         ),
-                      ),
-                    ),
-                    ...products.map(
-                          (p) => ProductCard(
-                        product: p,
-                        onTap: () => handleAddToCart(p),
-                        alreadyInCart: addedToCart.contains(p.id),
-                      ),
+                      ).animate(delay: (entry.key * 100).ms)
+                          .fadeIn(duration: 600.ms)
+                          .slideX(begin: 0.3),
                     ),
                     const SizedBox(height: 16),
+                    _buildSectionHeader("All Products", Icons.inventory),
+                    ...products.asMap().entries.map(
+                          (entry) => Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        child: ProductCard(
+                          product: entry.value,
+                          onTap: () => handleAddToCart(entry.value),
+                          alreadyInCart: addedToCart.contains(entry.value.id),
+                        ),
+                      ).animate(delay: (entry.key * 50).ms)
+                          .fadeIn(duration: 600.ms)
+                          .slideX(begin: 0.3),
+                    ),
+                    const SizedBox(height: 32),
                   ],
-                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                ),
               ),
             ),
           ],

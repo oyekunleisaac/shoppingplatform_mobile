@@ -34,7 +34,7 @@ dependencies:
   shared_preferences: ^2.2.2
   fluttertoast: ^8.2.4
   flutter_animate: ^4.2.0
-
+  flutter_svg: ^2.0.9
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -51,6 +51,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+  # Optional: Add this if you want to automatically generate app icons
+  flutter_launcher_icons: ^0.13.1
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -63,9 +66,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -92,3 +94,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Optional: Configuration for automatic app icon generation
+# Uncomment and configure this section if you want to use flutter_launcher_icons
+flutter_launcher_icons:
+   android: true
+   ios: true
+   image_path: "assets/images/logo.png"  # Convert your SVG to PNG first
+   adaptive_icon_background: "#2196F3"  # Your brand blue color
+   adaptive_icon_foreground: "assets/images/logo.png"
